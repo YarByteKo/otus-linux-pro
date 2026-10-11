@@ -1,0 +1,247 @@
+==========================================
+RAID-BUILDER: 2026-10-09 16:50:24
+Лог-файл доступен в: /var/log/raid-builder.log
+==========================================
+
+==== Список блочных устройств ====
+
+/0/100/1.1/0.0.0  /dev/cdrom  disk        CD-ROM
+/0/100/d/0        /dev/sda    disk        10GB VBOX HARDDISK
+/0/100/d/1        /dev/sdb    disk        1073MB VBOX HARDDISK
+/0/100/d/2        /dev/sdc    disk        1073MB VBOX HARDDISK
+/0/100/d/3        /dev/sdd    disk        1073MB VBOX HARDDISK
+/0/100/d/4        /dev/sde    disk        1073MB VBOX HARDDISK
+/0/100/d/5        /dev/sdf    disk        1073MB VBOX HARDDISK
+
+==== Выбраны следующие диски для массива: ====
+
+  /dev/sdb
+  /dev/sdc
+  /dev/sdd
+  /dev/sde
+  /dev/sdf
+
+==== Создание массива ====
+
+To optimize recovery speed, it is recommended to enable write-intent bitmap, do you want to enable it now? [y/N]? mdadm: layout defaults to left-symmetric
+mdadm: layout defaults to left-symmetric
+mdadm: chunk size defaults to 512K
+mdadm: size set to 1046528K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.
+
+==== Проверка состояния массива ====
+
+Personalities : [raid4] [raid5] [raid6] 
+md0 : active raid6 sdf[4] sde[3] sdd[2] sdc[1] sdb[0]
+      3139584 blocks super 1.2 level 6, 512k chunk, algorithm 2 [5/5] [UUUUU]
+      [>....................]  resync =  0.0% (1/1046528) finish=1090.1min speed=0K/sec
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+unused devices: <none>
+/dev/md0:
+           Version : 1.2
+     Creation Time : Fri Oct  9 16:50:31 2026
+        Raid Level : raid6
+        Array Size : 3139584 (2.99 GiB 3.21 GB)
+     Used Dev Size : 1046528 (1022.00 MiB 1071.64 MB)
+      Raid Devices : 5
+     Total Devices : 5
+       Persistence : Superblock is persistent
+
+     Intent Bitmap : Internal
+
+       Update Time : Fri Oct  9 16:50:31 2026
+             State : clean, resyncing 
+    Active Devices : 5
+   Working Devices : 5
+    Failed Devices : 0
+     Spare Devices : 0
+
+            Layout : left-symmetric
+        Chunk Size : 512K
+
+Consistency Policy : bitmap
+
+     Resync Status : 0% complete
+
+              Name : Server:0  (local to host Server)
+              UUID : 537bb8b5:7f1ce11f:87b98682:32b9172c
+            Events : 0
+
+    Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8       32        1      active sync   /dev/sdc
+       2       8       48        2      active sync   /dev/sdd
+       3       8       64        3      active sync   /dev/sde
+       4       8       80        4      active sync   /dev/sdf
+
+Синхронизация массива...
+
+Personalities : [raid4] [raid5] [raid6] 
+md0 : active raid6 sdf[4] sde[3] sdd[2] sdc[1] sdb[0]
+      3139584 blocks super 1.2 level 6, 512k chunk, algorithm 2 [5/5] [UUUUU]
+      [>....................]  resync =  0.1% (2180/1046528) finish=7.9min speed=2180K/sec
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+unused devices: <none>
+Personalities : [raid4] [raid5] [raid6] 
+md0 : active raid6 sdf[4] sde[3] sdd[2] sdc[1] sdb[0]
+      3139584 blocks super 1.2 level 6, 512k chunk, algorithm 2 [5/5] [UUUUU]
+      [============>........]  resync = 64.3% (673536/1046528) finish=0.0min speed=67353K/sec
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+unused devices: <none>
+
+Синхронизация массива завершена.
+
+==== Создание разделов ====
+
+Model: Linux Software RAID Array (md)
+Disk /dev/md0: 3215MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size   File system  Name     Flags
+ 1      1573kB  643MB   642MB  ext4         primary
+ 2      643MB   1287MB  643MB  ext4         primary
+ 3      1287MB  1928MB  642MB  ext4         primary
+ 4      1928MB  2572MB  643MB  ext4         primary
+ 5      2572MB  3213MB  642MB  ext4         primary
+
+NAME    MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+md0       9:0    0     3G  0 raid6 
+├─md0p1 259:0    0   612M  0 part  
+├─md0p2 259:1    0 613,5M  0 part  
+├─md0p3 259:2    0   612M  0 part  
+├─md0p4 259:3    0 613,5M  0 part  
+└─md0p5 259:4    0   612M  0 part  
+
+==== Создание файловой системы ====
+
+mke2fs 1.47.2 (1-Jan-2025)
+Creating filesystem with 156672 4k blocks and 39200 inodes
+Filesystem UUID: 608ffae5-1578-4ba8-ba86-1a752fc67141
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/5   done                            
+Writing inode tables: 0/5   done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: 0/5   done
+
+mke2fs 1.47.2 (1-Jan-2025)
+Creating filesystem with 157056 4k blocks and 39280 inodes
+Filesystem UUID: 24fb6283-6be7-4e74-b6b3-559ceed79cbb
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/5   done                            
+Writing inode tables: 0/5   done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: 0/5   done
+
+mke2fs 1.47.2 (1-Jan-2025)
+Creating filesystem with 156672 4k blocks and 39200 inodes
+Filesystem UUID: 06d24f36-0387-4bf8-8c40-a985abd493ec
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/5   done                            
+Writing inode tables: 0/5   done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: 0/5   done
+
+mke2fs 1.47.2 (1-Jan-2025)
+Creating filesystem with 157056 4k blocks and 39280 inodes
+Filesystem UUID: d1dc34b9-d6a7-4a9d-8497-ad4ebdcdfa9d
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/5   done                            
+Writing inode tables: 0/5   done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: 0/5   done
+
+mke2fs 1.47.2 (1-Jan-2025)
+Creating filesystem with 156672 4k blocks and 39200 inodes
+Filesystem UUID: 4da3d86e-3ee5-4f6c-bf20-b8784c810013
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/5   done                            
+Writing inode tables: 0/5   done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: 0/5   done
+
+
+==== Монтирование разделов ====
+
+
+/dev/md0p1 смонтирован в /raid/part1
+/dev/md0p2 смонтирован в /raid/part2
+/dev/md0p3 смонтирован в /raid/part3
+/dev/md0p4 смонтирован в /raid/part4
+/dev/md0p5 смонтирован в /raid/part5
+
+==== ИНФО ====
+
+Состояние RAID:
+
+Personalities : [raid4] [raid5] [raid6] 
+md0 : active raid6 sdf[4] sde[3] sdd[2] sdc[1] sdb[0]
+      3139584 blocks super 1.2 level 6, 512k chunk, algorithm 2 [5/5] [UUUUU]
+      bitmap: 1/1 pages [4KB], 65536KB chunk
+
+unused devices: <none>
+
+Информация о массиве:
+
+/dev/md0:
+           Version : 1.2
+     Creation Time : Fri Oct  9 16:50:31 2026
+        Raid Level : raid6
+        Array Size : 3139584 (2.99 GiB 3.21 GB)
+     Used Dev Size : 1046528 (1022.00 MiB 1071.64 MB)
+      Raid Devices : 5
+     Total Devices : 5
+       Persistence : Superblock is persistent
+
+     Intent Bitmap : Internal
+
+       Update Time : Fri Oct  9 16:50:53 2026
+             State : active 
+    Active Devices : 5
+   Working Devices : 5
+    Failed Devices : 0
+     Spare Devices : 0
+
+            Layout : left-symmetric
+        Chunk Size : 512K
+
+Consistency Policy : bitmap
+
+              Name : Server:0  (local to host Server)
+              UUID : 537bb8b5:7f1ce11f:87b98682:32b9172c
+            Events : 19
+
+    Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8       32        1      active sync   /dev/sdc
+       2       8       48        2      active sync   /dev/sdd
+       3       8       64        3      active sync   /dev/sde
+       4       8       80        4      active sync   /dev/sdf
+
+Разделы и точки монтирования:
+
+NAME      SIZE FSTYPE MOUNTPOINTS
+md0         3G        
+├─md0p1   612M ext4   /raid/part1
+├─md0p2 613,5M ext4   /raid/part2
+├─md0p3   612M ext4   /raid/part3
+├─md0p4 613,5M ext4   /raid/part4
+└─md0p5   612M ext4   /raid/part5
+
+RAID-массив успешно собран.
+
