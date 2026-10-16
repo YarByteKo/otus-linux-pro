@@ -1,0 +1,28 @@
+Лог-файл: /var/log/LVM-OPS/LVM-OPS-5.log
+
+==== Пятый этап: проверка слияния ====
+
+CHECKSUMS
+CHECKSUMS.gpg
+REBUILD
+index.html
+index.html?C=D;O=A
+index.html?C=D;O=D
+index.html?C=M;O=A
+index.html?C=M;O=D
+index.html?C=N;O=A
+index.html?C=N;O=D
+index.html?C=S;O=A
+index.html?C=S;O=D
+linux-headers-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+linux-headers-7.2.0-070200_7.2.0-070200.202608162350_all.deb
+linux-image-unsigned-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+linux-modules-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+log
+self-tests
+status
+summary.yaml
+
+==== Завершено ====
+
+

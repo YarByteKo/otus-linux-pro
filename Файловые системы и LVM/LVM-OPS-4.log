@@ -1,0 +1,72 @@
+Лог-файл: /var/log/LVM-OPS/LVM-OPS-4.log
+
+==== Четвёртый этап: работа со снимками ====
+
+NAME                             FSTYPE      FSVER    LABEL UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+loop0                            squashfs    4.0                                                         0   100% /snap/hwctl/123
+loop1                            squashfs    4.0                                                         0   100% /snap/core24/1643
+loop2                            squashfs    4.0                                                         0   100% /snap/snapd/27710
+sda                                                                                                               
+├─sda1                           vfat        FAT32          AF7E-38A3                               707.3M     1% /boot/efi
+├─sda2                           ext4        1.0            b0ecf76a-fe5b-49d4-848d-10739e8be60d      1.4G    11% /boot
+└─sda3                           LVM2_member LVM2 001       dWYWjO-A2ZN-QqPq-tcIi-A9Nx-hwRA-e3R0ph                
+  └─ubuntu--vg-ubuntu--lv        ext4        1.0            6dea28c7-bd49-4ce2-b5d4-056461d33d39      2.4G    64% /
+sdb                              LVM2_member LVM2 001       lWmRIm-TMP3-yzrz-A800-e1sO-Uf3r-P4DPyR                
+├─vg--primary-raid--var_rmeta_0                                                                                   
+│ └─vg--primary-raid--var        ext4        1.0            a2848468-c41e-4e69-b6e0-fddbcf7278f0      2.2G    17% /var
+├─vg--primary-raid--var_rimage_0                                                                                  
+│ └─vg--primary-raid--var        ext4        1.0            a2848468-c41e-4e69-b6e0-fddbcf7278f0      2.2G    17% /var
+└─vg--primary-opt                                                                                                 
+sdc                              LVM2_member LVM2 001       V1aO4m-Bp7R-JqO9-pTa4-ofOF-J2o9-P8D1PL                
+├─vg--primary-raid--var_rmeta_1                                                                                   
+│ └─vg--primary-raid--var        ext4        1.0            a2848468-c41e-4e69-b6e0-fddbcf7278f0      2.2G    17% /var
+└─vg--primary-raid--var_rimage_1                                                                                  
+  └─vg--primary-raid--var        ext4        1.0            a2848468-c41e-4e69-b6e0-fddbcf7278f0      2.2G    17% /var
+sdd                              LVM2_member LVM2 001       bvYpk8-pMkb-jXpc-IS5A-Mt11-ejsm-qiWKzu                
+├─vg--primary-home               ext4        1.0            8e316b4f-870a-49f1-b373-37021a6cdcfa      2.7G     0% /home
+└─vg--primary-opt                                                                                                 
+sr0                                                                                                               
+  Logical volume "snap-test" created.
+CHECKSUMS
+CHECKSUMS.gpg
+REBUILD
+index.html
+index.html?C=D;O=A
+index.html?C=D;O=D
+index.html?C=M;O=A
+index.html?C=M;O=D
+index.html?C=N;O=A
+index.html?C=N;O=D
+index.html?C=S;O=A
+index.html?C=S;O=D
+linux-headers-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+linux-headers-7.2.0-070200_7.2.0-070200.202608162350_all.deb
+linux-image-unsigned-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+linux-modules-7.2.0-070200-generic_7.2.0-070200.202608162350_amd64.deb
+log
+self-tests
+status
+summary.yaml
+CHECKSUMS
+CHECKSUMS.gpg
+REBUILD
+index.html
+index.html?C=D;O=A
+index.html?C=D;O=D
+index.html?C=M;O=A
+index.html?C=M;O=D
+index.html?C=N;O=A
+index.html?C=N;O=D
+index.html?C=S;O=A
+index.html?C=S;O=D
+log
+self-tests
+status
+summary.yaml
+umount: /home: target is busy.
+  Delaying merge since origin is open.
+  Merging of snapshot vg-primary/snap-test will occur on next activation of vg-primary/home.
+
+==== Четвёртый этап завершён, перезагрузка для слияния ====
+
+
