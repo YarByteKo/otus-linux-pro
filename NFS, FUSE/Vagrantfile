@@ -1,0 +1,76 @@
+# Автоматизация развёртывания клиент-серверной модели в рамках задачи по NFS.
+# За основу взят адаптированный образ Ubuntu 26.04 от Bento (https://app.vagrantup.com/bento/boxes/ubuntu-26.04).
+# В приоритетном порядке развёртывается серверная часть NFS, затем клиентская часть.
+# SSH добавлен через проброс порта, чтобы можно было подключаться к каждой из машин по отдельности.
+# В завершающей части задействуется Ansible.
+
+Vagrant.configure("2") do |config|
+  # Bento Ubuntu 26.04 is built for UEFI. Allow extra time for the first boot.
+  config.vm.box = "bento/ubuntu-26.04"
+  config.vm.box_check_update = false
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # ==== Общие параметры машин ==== #
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.memory = 2048
+    vb.cpus = 1
+
+    # Активация графического режима VirtualBox.
+    vb.gui = ENV["VAGRANT_GUI"] == "0"
+
+    # Развёртывание только в режиме UEFI.
+    vb.customize ["modifyvm", :id, "--firmware", "efi"]
+
+    # Включение USB XHCI и USB HID устройств.
+    vb.customize ["modifyvm", :id, "--usb-xhci", "on"]
+    vb.customize ["modifyvm", :id, "--keyboard", "usb"]
+    vb.customize ["modifyvm", :id, "--mouse", "usbtablet"]
+  end
+
+  # ==== Серверная часть NFS ==== #
+
+  config.vm.define "server-side" do |server|
+    server.vm.hostname = "nfs-server"
+
+    # Сетевые настройки для сервера.
+    server.vm.network "private_network",
+      ip: "192.168.77.4",
+      virtualbox__intnet: "otus-net"
+
+    # Настройка SSH.
+    server.vm.network "forwarded_port",
+      id: "ssh-server",
+      guest: 22,
+      host: 28320,
+      host_ip: "127.0.0.1",
+      auto_correct: true
+  end
+
+  # ==== Клиентская часть NFS ==== #
+
+  config.vm.define "client-side" do |client|
+    client.vm.hostname = "nfs-client"
+
+    # Сетевые настройки для клиента.
+    client.vm.network "private_network",
+      ip: "192.168.77.5",
+      virtualbox__intnet: "otus-net"
+
+    # Настройка SSH.
+    client.vm.network "forwarded_port",
+      id: "ssh-client",
+      guest: 22,
+      host: 28321,
+      host_ip: "127.0.0.1",
+      auto_correct: true
+
+    # Передаём управление конфигурацией Ansible.
+    client.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook.yml"
+      ansible.limit = "all"
+    end
+  end
+end

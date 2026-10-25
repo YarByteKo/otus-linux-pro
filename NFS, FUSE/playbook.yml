@@ -1,0 +1,181 @@
+---
+# The NFS server is configured first, then the NFS client.
+# The hosts values must match the Vagrant machine names.
+# nfs-upload uses the same numeric GID on both machines because NFS sec=sys
+# authorizes access using the numeric UID/GID values sent by the client.
+
+- name: Старт развёртывания серверной части NFS
+  hosts: server-side
+  become: true
+  gather_facts: true
+
+  vars:
+    nfs_export_path: /srv/share/upload
+    nfs_client_cidr: 192.168.77.5/32
+    nfs_upload_group: nfs-upload
+    nfs_upload_gid: 2000
+    nfs_upload_user: vagrant
+    linux_kernel_version: "7.2.12"
+    linux_kernel_sha256: "bb18468a8dc8978aa00caa6446e753f7b6da3fee56b6b7f38b16f9430ba02d4f"
+    linux_kernel_url: "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-{{ linux_kernel_version }}.tar.xz"
+    linux_kernel_filename: "linux-{{ linux_kernel_version }}.tar.xz"
+
+  tasks:
+    - name: Установка NFS-сервера
+      ansible.builtin.apt:
+        name: nfs-kernel-server
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Создание группы, которая будет иметь доступ к NFS-экспорту
+      ansible.builtin.group:
+        name: "{{ nfs_upload_group }}"
+        gid: "{{ nfs_upload_gid }}"
+        state: present
+
+    - name: Добавление пользователя vagrant в группу загрузки на сервере NFS
+      ansible.builtin.user:
+        name: "{{ nfs_upload_user }}"
+        groups: "{{ nfs_upload_group }}"
+        append: true
+        state: present
+
+    - name: Создание каталога для NFS-экспорта
+      ansible.builtin.file:
+        path: "{{ nfs_export_path }}"
+        state: directory
+        owner: root
+        group: "{{ nfs_upload_group }}"
+        mode: '2775'
+
+    - name: Настройка экспорта NFS
+      ansible.builtin.lineinfile:
+        path: /etc/exports
+        regexp: '^/srv/share/upload\s+'
+        line: "{{ nfs_export_path }} {{ nfs_client_cidr }}(rw,sync,no_subtree_check,root_squash,sec=sys,fsid=0)"
+        create: true
+        owner: root
+        group: root
+        mode: '0644'
+        backup: true
+
+    - name: Запуск и активация NFS-сервера
+      ansible.builtin.service:
+        name: nfs-kernel-server
+        state: started
+        enabled: true
+
+    - name: Применение конфигурации экспорта NFS
+      ansible.builtin.command:
+        argv:
+          - exportfs
+          - -ra
+      changed_when: false
+
+    - name: Тестовая загрузка архива ядра Linux
+      ansible.builtin.get_url:
+        url: "{{ linux_kernel_url }}"
+        dest: "{{ nfs_export_path }}/{{ linux_kernel_filename }}"
+        checksum: "sha256:{{ linux_kernel_sha256 }}"
+        owner: root
+        group: "{{ nfs_upload_group }}"
+        mode: '0644'
+        timeout: 120
+
+    - name: Результат
+      ansible.builtin.debug:
+        msg: >-
+          Развёртывание серверной части завершено.
+
+    - name: Получение хеш-суммы архива
+      ansible.builtin.stat:
+        path: "{{ nfs_export_path }}/{{ linux_kernel_filename }}"
+        get_checksum: true
+        checksum_algorithm: sha256
+      register: linux_kernel_server_stat
+
+    - name: Верификация загруженного архива
+      ansible.builtin.assert:
+        that:
+          - linux_kernel_server_stat.stat.exists
+          - linux_kernel_server_stat.stat.size | int > 0
+          - linux_kernel_server_stat.stat.checksum == linux_kernel_sha256
+        fail_msg: "Проверка не пройдена: архив отсутствует в целевом каталоге или имеет неверную хеш-сумму."
+        success_msg: "Проверка пройдена: архив {{ linux_kernel_filename }} размещён в {{ nfs_export_path }}, хеш-сумма: {{ linux_kernel_server_stat.stat.checksum }}."
+
+- name: Старт развёртывания клиентской части NFS
+  hosts: client-side
+  become: true
+  gather_facts: true
+
+  vars:
+    nfs_server_ip: 192.168.77.4
+    nfs_mount_path: /mnt/nfs_client
+    nfs_upload_group: nfs-upload
+    nfs_upload_gid: 2000
+    nfs_upload_user: vagrant
+    linux_kernel_version: "7.2.12"
+    linux_kernel_sha256: "bb18468a8dc8978aa00caa6446e753f7b6da3fee56b6b7f38b16f9430ba02d4f"
+    linux_kernel_filename: "linux-{{ linux_kernel_version }}.tar.xz"
+
+  tasks:
+    - name: Установка NFS-клиента
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Создание группы, которая будет иметь доступ к NFS-экспорту
+      ansible.builtin.group:
+        name: "{{ nfs_upload_group }}"
+        gid: "{{ nfs_upload_gid }}"
+        state: present
+
+    - name: Добавление пользователя vagrant в группу загрузки на клиенте NFS
+      ansible.builtin.user:
+        name: "{{ nfs_upload_user }}"
+        groups: "{{ nfs_upload_group }}"
+        append: true
+        state: present
+
+    - name: Создание каталога для монтирования
+      ansible.builtin.file:
+        path: "{{ nfs_mount_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Ожидание запуска NFSv4 на сервере
+      ansible.builtin.wait_for:
+        host: "{{ nfs_server_ip }}"
+        port: 2049
+        state: started
+        timeout: 60
+
+    - name: Настройка автомонтирования NFS
+      ansible.posix.mount:
+        path: "{{ nfs_mount_path }}"
+        src: "{{ nfs_server_ip }}:/"
+        fstype: nfs
+        opts: 'rw,vers=4.2,proto=tcp,hard,timeo=600,retrans=2,_netdev'
+        state: mounted
+
+    - name: Получение хеш-суммы архива
+      ansible.builtin.stat:
+        path: "{{ nfs_mount_path }}/{{ linux_kernel_filename }}"
+        get_checksum: true
+        checksum_algorithm: sha256
+      register: linux_kernel_client_stat
+
+    - name: Верификация загруженного архива
+      ansible.builtin.assert:
+        that:
+          - linux_kernel_client_stat.stat.exists
+          - linux_kernel_client_stat.stat.size | int > 0
+          - linux_kernel_client_stat.stat.checksum == linux_kernel_sha256
+          - linux_kernel_client_stat.stat.checksum == hostvars['server-side']['linux_kernel_server_stat']['stat']['checksum']
+        fail_msg: "Проверка не пройдена: архив {{ linux_kernel_filename }} не доступен через NFS или имеет неверную хеш-сумму."
+        success_msg: "Проверка пройдена: клиент получил доступ к {{ linux_kernel_filename }} через NFS, хеш-сумма: {{ linux_kernel_client_stat.stat.checksum }}."
