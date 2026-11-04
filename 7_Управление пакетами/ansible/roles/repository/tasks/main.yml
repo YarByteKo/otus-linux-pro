@@ -29,7 +29,7 @@
 - name: Перенос пакетов в создаваемый репозиторий
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ repo_dir }}/"
+    dest: "{{ repository_dir }}/"
     remote_src: true
     mode: '0644'
   loop: "{{ repo_rpm_files }}"
@@ -41,7 +41,7 @@
     argv:
       - createrepo_c
       - --update
-      - "{{ repo_dir }}"
+      - "{{ repository_dir }}"
   register: createrepo_result
   changed_when: true
 
