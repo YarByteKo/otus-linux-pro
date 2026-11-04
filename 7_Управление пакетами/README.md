@@ -23,6 +23,38 @@
 - Проверять качество пакета через линтер
 - Собирать пакеты через mock, чтобы не засорять систему
 
+Архитектура пайплайна разделена на несколько этапов, что потребовало изучения концепции ролей и задач в Ansible. Всего четыре этапа:
+- `environment` - подготовка сборочного окружения
+- `build` - компиляция бинарных пакетов
+- `validation` - установка пакетов и тестирование
+- `repository` - создание локального репозитория
+
+Схема:
+ ```text
+ 📁 7_Управление пакетами
+ ├── 📁 ansible/
+ │   ├── 📁 group_vars/
+ │   ├── 📁 roles/
+ │   │   ├── 📁 environment/
+ │   │   │   └── 📁 tasks/
+ │   │   │       └── 📄 main.yml
+ │   │   ├── 📁 build/
+ │   │   │   └── 📁 tasks/
+ │   │   │       └── 📄 main.yml
+ │   │   ├── 📁 validation/
+ │   │   │   └── 📁 tasks/
+ │   │   │       ├── 📄 main.yml
+ |   |   |       ├── 📄 sqlite_test.yml
+ |   |   |       └── 📄 unbound_test.yml
+ │   │   └── 📁 repository/
+ │   │       └── 📁 tasks/
+ │   │           └── 📄 main.yml
+ │   └── 📄 site.yml
+ └── 📁 artifacts/
+     ├── 📁 sqlite/
+     └── 📁 unbound/
+ ```
+
 В результате сборки получено 33 RPM-пакета:
 - SQLite -18 RPM-пакетов.
 - Unbound - 15 RPM-пакетов.
@@ -33,3 +65,10 @@
 - Для Unbound отправляется тестовый запрос домена
 
 На завершающем этапе формируется локальный репозиторий с собранными пакетами.
+
+----
+Источники:
+- https://docs.ansible.com
+- https://www.sqlite.org/docs.html
+- https://rpm-packaging-guide.github.io/#introduction
+- https://docs.fedoraproject.org/en-US/packaging-guidelines
