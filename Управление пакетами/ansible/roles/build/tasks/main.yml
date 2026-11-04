@@ -1,0 +1,76 @@
+# Этап компиляции пакетов. 
+# Длительность процесса зависит от параметров развёрнутой машины.
+---
+- name: Создание директорий для сборки
+  ansible.builtin.file:
+    path: "{{ workspace }}/rpmbuild/{{ item.0.name }}/{{ item.1 }}"
+    state: directory
+    owner: "{{ builder }}"
+    group: "{{ builder }}"
+    mode: "0755"
+  loop: "{{ projects | product(['BUILD', 'BUILDROOT', 'RPMS', 'SOURCES', 'SPECS', 'SRPMS']) | list }}"
+  loop_control:
+    label: "{{ item.0.name }}/{{ item.1 }}"
+
+- name: Копирование исходников в /SOURCES
+  ansible.builtin.shell: |
+    set -euo pipefail
+
+    find "{{ workspace }}/{{ item.name }}" \
+      -maxdepth 1 \
+      -type f \
+      ! -name "*.spec" \
+      ! -name "sources" \
+      ! -name "README*" \
+      -exec cp -t "{{ workspace }}/rpmbuild/{{ item.name }}/SOURCES" {} +
+
+    cp "{{ workspace }}/{{ item.name }}/{{ item.spec }}" \
+       "{{ workspace }}/rpmbuild/{{ item.name }}/SPECS/"
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ builder }}"
+  loop: "{{ projects }}"
+
+- name: Запуск сборки пакетов из спецификаций
+  ansible.builtin.command:
+    cmd: >
+      rpmbuild
+      -bs
+      --define "_topdir {{ workspace }}/rpmbuild/{{ item.name }}"
+      "{{ workspace }}/rpmbuild/{{ item.name }}/SPECS/{{ item.spec }}"
+  become: true
+  become_user: "{{ builder }}"
+  loop: "{{ projects }}"
+
+- name: Поиск сгенерированных SRPM
+  ansible.builtin.find:
+    paths: "{{ workspace }}/rpmbuild/{{ item.name }}/SRPMS"
+    patterns: "*.src.rpm"
+    file_type: file
+  loop: "{{ projects }}"
+  register: generated_srpms
+  become: true
+  become_user: "{{ builder }}"
+
+- name: Проверка наличия SRPM
+  ansible.builtin.assert:
+    that:
+      - item.matched > 0
+    fail_msg: "SRPM не сгенерированы для {{ item.item.name }}"
+  loop: "{{ generated_srpms.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Старт сборки бинарных пакетов
+  ansible.builtin.command:
+    cmd: >
+      mock
+      --root {{ mock_config }}
+      --rebuild {{ item.1.path }}
+      --resultdir {{ workspace }}/rpmbuild/{{ item.0.item.name }}/mock-results
+  become: true
+  become_user: "{{ builder }}"
+  loop: "{{ generated_srpms.results | subelements('files') }}"
+  loop_control:
+    label: "{{ item.0.item.name }}"

@@ -1,0 +1,25 @@
+---
+- name: Проверка статуса DNS
+  ansible.builtin.systemd:
+    name: unbound
+    state: started
+    enabled: true
+  become: true
+
+- name: Проверка запросов к DNS
+  ansible.builtin.command:
+    argv:
+      - dig
+      - "@127.0.0.1"
+      - example.com
+      - +dnssec
+      - +short
+  register: unbound_test
+  changed_when: false
+  failed_when: >
+    unbound_test.rc != 0 or
+    unbound_test.stdout | length == 0
+
+- name: Результат запроса
+  ansible.builtin.debug:
+    msg: "DNS-сервер обработал запрос без ошибок"

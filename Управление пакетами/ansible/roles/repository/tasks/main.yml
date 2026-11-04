@@ -1,0 +1,62 @@
+# Итоговая часть задачи.
+# Создание локального репозитория из собранных пакетов.
+---
+- name: Создание каталога для репозитория
+  ansible.builtin.file:
+    path: "{{ repository_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Поиск подходящих пакетов для репозитория
+  ansible.builtin.find:
+    paths: "{{ workspace }}/rpmbuild/{{ item.name }}/mock-results"
+    patterns: "*.rpm"
+    file_type: file
+  loop: "{{ projects }}"
+  register: rpm_files
+
+- name: Подготовка пакетов
+  ansible.builtin.set_fact:
+    repo_rpm_files: "{{ rpm_files.results | map(attribute='files') | flatten }}"
+
+- name: Проверка наличия подготовленных пакетов
+  ansible.builtin.assert:
+    that:
+      - repo_rpm_files | length > 0
+    fail_msg: "Не найдены подходящие пакеты для репозитория"
+    success_msg: "Найдены подходящие пакеты: {{ repo_rpm_files | length }}"
+
+- name: Перенос пакетов в создаваемый репозиторий
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ repo_dir }}/"
+    remote_src: true
+    mode: '0644'
+  loop: "{{ repo_rpm_files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Формирование метаданных репозитория
+  ansible.builtin.command:
+    argv:
+      - createrepo_c
+      - --update
+      - "{{ repo_dir }}"
+  register: createrepo_result
+  changed_when: true
+
+- name: Настройка репозитория
+  ansible.builtin.yum_repository:
+    name: "{{ repository_name }}"
+    description: Local RPM Repository
+    baseurl: "file://{{ repository_dir }}"
+    enabled: true
+    gpgcheck: false
+  become: true
+
+- name: Обновление кеша репозитория
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - makecache
+  changed_when: false

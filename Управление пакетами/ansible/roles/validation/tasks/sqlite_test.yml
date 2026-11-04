@@ -1,0 +1,47 @@
+---
+- name: Проверка версии SQLite
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - --version
+  register: sqlite_version
+  changed_when: false
+
+- name: Соответствие версии SQLite в рамках задачи
+  ansible.builtin.assert:
+    that:
+      - "'3.51.2' in sqlite_version.stdout"
+    fail_msg: "Целевая версия SQLite не соответствует: {{ sqlite_version.stdout }}"
+    success_msg: "SQLite соответствует целевой версии"
+
+- name: Создание тестовой базы данных
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - /tmp/data.db
+      - "CREATE TABLE IF NOT EXISTS otus (id INTEGER PRIMARY KEY, name TEXT); DELETE FROM otus; INSERT INTO otus (name) VALUES ('Hello from SQLite'); SELECT name FROM otus;"
+  register: sqlite_test
+  changed_when: false
+
+- name: Результат создания
+  ansible.builtin.assert:
+    that:
+      - "'Hello from SQLite' in sqlite_test.stdout"
+    fail_msg: "Проверка созданной базы провалена"
+    success_msg: "Проверка созданной базы успешно завершена"
+
+- name: Проверка целостности базы данных
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - /tmp/data.db
+      - "PRAGMA integrity_check;"
+  register: sqlite_integrity
+  changed_when: false
+
+- name: Результат целостности
+  ansible.builtin.assert:
+    that:
+      - "sqlite_integrity.stdout == 'ok'"
+    fail_msg: "Проверка целостности провалена"
+    success_msg: "Проверка целостности успешно завершена"

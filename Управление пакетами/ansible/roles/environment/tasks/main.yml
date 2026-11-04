@@ -1,0 +1,44 @@
+# Создание и настройка изолированного окружения для компиляции.
+---
+- name: Установка необходимых зависимостей для сборки
+  ansible.builtin.dnf:
+    name: "{{ dependencies }}"
+    state: present
+    update_cache: true
+
+- name: Проверка наличия окружения сборки
+  ansible.builtin.group:
+    name: mock
+    state: present
+
+- name: Добавление пользователя в окружение сборки
+  ansible.builtin.user:
+    name: "{{ builder }}"
+    groups: mock
+    append: true
+
+- name: Создание рабочего окружения
+  ansible.builtin.file:
+    path: "{{ workspace }}"
+    state: directory
+    owner: "{{ builder }}"
+    group: "{{ builder }}"
+    mode: "0755"
+
+- name: Создание директорий собранных пакетов
+  ansible.builtin.file:
+    path: "{{ artifacts_dir }}/{{ item.name }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ projects }}"
+
+- name: Проверка конфигурации сборочного окружения
+  ansible.builtin.stat:
+    path: "/etc/mock/{{ mock_config }}.cfg"
+  register: mock_config_file
+
+- name: Результат проверки конфигурации сборочного окружения
+  ansible.builtin.assert:
+    that:
+      - mock_config_file.stat.exists
+    fail_msg: "Файл {{ mock_config }}.cfg не найден"

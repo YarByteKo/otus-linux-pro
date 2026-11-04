@@ -1,0 +1,50 @@
+# Подготовка исходных данных для запуска компиляции.
+---
+- name: Клонирование репозиториев пакетов
+  ansible.builtin.git:
+    repo: "{{ src_package }}/{{ item.name }}.git"
+    dest: "{{ workspace }}/{{ item.name }}"
+    version: "f{{ fedora_ver }}"
+    depth: 1
+    update: true
+    force: false
+  become: true
+  become_user: "{{ builder }}"
+  loop: "{{ projects }}"
+
+- name: Загрузка исходного кода SQLite и Unbound
+  ansible.builtin.command:
+    cmd: fedpkg sources
+    chdir: "{{ workspace }}/{{ item.name }}"
+  become: true
+  become_user: "{{ builder }}"
+  loop: "{{ projects }}"
+  register: source_download
+  changed_when: true
+
+- name: Отладочные данные процесса загрузки
+  ansible.builtin.debug:
+    msg: "Загрузка исходников {{ item.item.name }}"
+  loop: "{{ source_download.results }}"
+
+- name: SQLite SPEC
+  ansible.builtin.command:
+    cmd: sed -n '1,260p' sqlite.spec
+    chdir: "{{ workspace }}/sqlite"
+  register: sqlite_spec
+  changed_when: false
+
+- name: Unbound SPEC
+  ansible.builtin.command:
+    cmd: sed -n '1,300p' unbound.spec
+    chdir: "{{ workspace }}/unbound"
+  register: unbound_spec
+  changed_when: false
+
+- name: Вывод информации о пакете SQLite
+  ansible.builtin.debug:
+    var: sqlite_spec.stdout_lines
+
+- name: Вывод информации о пакете Unbound
+  ansible.builtin.debug:
+    var: unbound_spec.stdout_lines

@@ -1,0 +1,31 @@
+# Централизованное управление переменными пайплайна.
+---
+fedora_ver: "44"
+builder: vagrant
+workspace: /home/otus-task
+src_package: https://src.fedoraproject.org/rpms
+mock_config: fedora-44-x86_64
+
+projects:
+  - name: sqlite
+    spec: sqlite.spec
+
+  - name: unbound
+    spec: unbound.spec
+
+artifacts_dir: /otus-task/artifacts
+repository_dir: "{{ artifacts_dir }}/repository"
+repository_name: otus-rpm-ops
+
+dependencies:
+  - git
+  - fedpkg
+  - fedora-packager
+  - rpm-build
+  - rpmdevtools
+  - rpmautospec
+  - mock
+  - rpmlint
+  - gcc
+  - make
+  - createrepo_c

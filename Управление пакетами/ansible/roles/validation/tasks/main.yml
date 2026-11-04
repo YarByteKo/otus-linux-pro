@@ -1,0 +1,109 @@
+# Здесь происходит установка собранных пакетов и запуск внешних конфигов для проведения теста.
+# Из набора собранных пакетов ставятся только необходимые для работы базы данных и DNS.
+---
+- name: Поиск собранных пакетов
+  ansible.builtin.find:
+    paths: "{{ workspace }}/rpmbuild/{{ item.name }}/mock-results"
+    patterns: "*.rpm"
+    file_type: file
+  loop: "{{ projects }}"
+  register: generated_rpms
+  become: true
+  become_user: "{{ builder }}"
+
+- name: Проверка наличия собранных пакетов
+  ansible.builtin.assert:
+    that:
+      - item.matched > 0
+    fail_msg: "Отсутствует собранный пакет для {{ item.item.name }}"
+  loop: "{{ generated_rpms.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Проверка пакетов линтером
+  ansible.builtin.command:
+    argv:
+      - rpmlint
+      - "{{ item.1.path }}"
+  loop: "{{ generated_rpms.results | subelements('files') }}"
+  register: rpmlint_results
+  changed_when: false
+  failed_when: false
+  become: true
+  become_user: "{{ builder }}"
+
+- name: Результат линтера
+  ansible.builtin.debug:
+    msg:
+      - "Пакет: {{ item.item.0.item.name }}"
+      - "RPM: {{ item.item.1.path }}"
+      - "Код завершения: {{ item.rc }}"
+      - "{{ item.stdout_lines | default([]) }}"
+      - "{{ item.stderr_lines | default([]) }}"
+  loop: "{{ rpmlint_results.results }}"
+  loop_control:
+    label: "{{ item.item.1.path }}"
+
+- name: Создание директорий для артефактов
+  become: true
+  ansible.builtin.file:
+    path: "{{ artifacts_dir }}/{{ item.name }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: "0755"
+  loop: "{{ projects }}"
+
+- name: Копирование артефактов RPM и SRPM
+  become: true
+  ansible.builtin.shell: |
+    set -euo pipefail
+
+    destination="{{ artifacts_dir }}/{{ item.item.name }}"
+    mkdir -p "$destination"
+
+    cp -a "{{ workspace }}/rpmbuild/{{ item.item.name }}/mock-results/." \
+      "$destination/"
+
+    cp -a "{{ workspace }}/rpmbuild/{{ item.item.name }}/SRPMS/." \
+      "$destination/"
+  args:
+    executable: /bin/bash
+  loop: "{{ generated_rpms.results }}"
+  become_user: "{{ builder }}"
+
+- name: Вывод результата сборки
+  ansible.builtin.debug:
+    msg: "{{ item.item.name }}: {{ item.matched }} RPM packages generated"
+  loop: "{{ generated_rpms.results }}"
+
+- name: Установка SQLite
+  ansible.builtin.dnf:
+    name:
+      - "{{ artifacts_dir }}/sqlite/sqlite-libs-3.51.2-2.fc44.x86_64.rpm"
+      - "{{ artifacts_dir }}/sqlite/sqlite-3.51.2-2.fc44.x86_64.rpm"
+    state: present
+    disable_gpg_check: true
+  become: true
+
+- name: Установка Unbound
+  ansible.builtin.dnf:
+    name:
+      - "{{ artifacts_dir }}/unbound/unbound-libs-1.26.2-1.fc44.x86_64.rpm"
+      - "{{ artifacts_dir }}/unbound/unbound-1.26.2-1.fc44.x86_64.rpm"
+    state: present
+    disable_gpg_check: true
+  become: true
+
+- name: Установка зависимостей для теста Unbound
+  ansible.builtin.dnf:
+    name: bind-utils
+    state: present
+  become: true
+
+- name: Старт проверки работоспособности SQLite
+  ansible.builtin.import_tasks: sqlite_test.yml
+
+- name: Старт проверки работоспособности Unbound
+  ansible.builtin.import_tasks: unbound_test.yml
+

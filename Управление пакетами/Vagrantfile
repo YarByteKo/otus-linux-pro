@@ -1,0 +1,27 @@
+# Образ развёртывания выбран - Fedora Cloud. 
+# Загрузка указана с официального сайта разработчиков. 
+# Провайдер виртуальных машин - VirtualBox.
+# Примечание: для ускорения пайплайна лучше выделить как можно больше ресурсов хоста.
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "fedora-44"
+  config.vm.box_url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Cloud/x86_64/images/Fedora-Cloud-Base-Vagrant-VirtualBox-44-1.7.x86_64.vagrant.virtualbox.box"
+
+  config.vm.hostname = "RPM-OPS"
+  config.vm.network "private_network", ip: "192.168.56.44"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "RPM-OPS"
+    vb.memory = 8192
+    vb.cpus = 6
+  end
+
+  config.vm.synced_folder ".", "/vagrant"
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "ansible/site.yml"
+    ansible.install_mode = "dnf"
+  end
+
+end

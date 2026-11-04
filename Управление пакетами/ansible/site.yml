@@ -1,0 +1,16 @@
+# Точка входа в пайплайн.
+---
+- name: Старт пайплайна
+  hosts: all
+  connection: local
+  become: true
+
+  vars_files:
+    - group_vars/variables.yml
+
+  roles:
+    - environment
+    - sources
+    - build
+    - validation
+    - repository
