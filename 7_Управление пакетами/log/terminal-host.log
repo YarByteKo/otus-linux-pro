@@ -2934,3 +2934,66 @@ TASK [validation : Результат запроса] **************************
 ok: [default] => {
     "msg": "DNS-сервер обработал запрос без ошибок"
 }
+
+TASK [repository : Создание каталога для репозитория] **************************
+ok: [default]
+
+TASK [repository : Поиск подходящих пакетов для репозитория] *******************
+ok: [default] => (item={'name': 'sqlite', 'spec': 'sqlite.spec'})
+ok: [default] => (item={'name': 'unbound', 'spec': 'unbound.spec'})
+
+TASK [repository : Подготовка пакетов] *****************************************
+ok: [default]
+
+TASK [repository : Проверка наличия подготовленных пакетов] ********************
+ok: [default] => {
+    "changed": false,
+    "msg": "Найдены подходящие пакеты: 33"
+}
+
+TASK [repository : Перенос пакетов в создаваемый репозиторий] ******************
+changed: [default] => (item=sqlite-doc-3.51.2-2.fc44.noarch.rpm)
+changed: [default] => (item=sqlite-debugsource-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-debug-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-analyzer-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-tools-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-tcl-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-libs-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-debug-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-tcl-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-libs-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-tools-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-analyzer-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-devel-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=lemon-debuginfo-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=lemon-3.51.2-2.fc44.x86_64.rpm)
+changed: [default] => (item=sqlite-3.51.2-2.fc44.src.rpm)
+changed: [default] => (item=unbound-debuginfo-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-debugsource-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-libs-debuginfo-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-libs-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-utils-debuginfo-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=python3-unbound-debuginfo-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=python3-unbound-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-utils-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-anchor-debuginfo-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-anchor-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-devel-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-munin-1.26.2-1.fc44.noarch.rpm)
+changed: [default] => (item=unbound-dracut-1.26.2-1.fc44.x86_64.rpm)
+changed: [default] => (item=unbound-1.26.2-1.fc44.src.rpm)
+
+TASK [repository : Формирование метаданных репозитория] ************************
+changed: [default]
+
+TASK [repository : Настройка репозитория] **************************************
+changed: [default]
+
+TASK [repository : Обновление кеша репозитория] ********************************
+ok: [default]
+
+PLAY RECAP *********************************************************************
+default                    : ok=48   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
