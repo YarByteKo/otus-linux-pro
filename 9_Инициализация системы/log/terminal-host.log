@@ -1,0 +1,161 @@
+vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+==> default: Box 'cloud-image/ubuntu-26.04' could not be found. Attempting to find and install...
+    default: Box Provider: virtualbox
+    default: Box Version: >= 0
+==> default: Loading metadata for box 'cloud-image/ubuntu-26.04'
+    default: URL: https://vagrantcloud.com/api/v2/vagrant/cloud-image/ubuntu-26.04
+==> default: Adding box 'cloud-image/ubuntu-26.04' (v20260927.0.0) for provider: virtualbox (amd64)
+    default: Downloading: https://vagrantcloud.com/cloud-image/boxes/ubuntu-26.04/versions/20260927.0.0/providers/virtualbox/amd64/vagrant.box
+==> default: Successfully added box 'cloud-image/ubuntu-26.04' (v20260927.0.0) for 'virtualbox (amd64)'!
+==> default: Importing base box 'cloud-image/ubuntu-26.04'...
+==> default: Generating MAC address for NAT networking...
+==> default: Checking if box 'cloud-image/ubuntu-26.04' version '20260927.0.0' is up to date...
+==> default: Setting the name of the VM: 9-TASK-BOX
+==> default: Clearing any previously set network interfaces...
+==> default: Preparing network interfaces based on configuration...
+    default: Adapter 1: nat
+    default: Adapter 2: hostonly
+==> default: Forwarding ports...
+    default: 22 (guest) => 2222 (host) (adapter 1)
+==> default: Running 'pre-boot' VM customizations...
+==> default: Booting VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2222
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+    default: 
+    default: Vagrant insecure key detected. Vagrant will automatically replace
+    default: this with a newly generated keypair for better security.
+    default: 
+    default: Inserting generated public key within guest...
+    default: Removing insecure key from the guest if it's present...
+    default: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> default: Machine booted and ready!
+==> default: Checking for guest additions in VM...
+    default: The guest additions on this VM do not match the installed version of
+    default: VirtualBox! In most cases this is fine, but in rare cases it can
+    default: prevent things such as shared folders from working properly. If you see
+    default: shared folder errors, please make sure the guest additions within the
+    default: virtual machine match the version of VirtualBox you have installed on
+    default: your host and reload your VM.
+    default: 
+    default: Guest Additions Version: 6.0.0 r127566
+    default: VirtualBox Version: 7.2
+==> default: Setting hostname...
+==> default: Configuring and enabling network interfaces...
+==> default: Running provisioner: ansible...
+    default: Running ansible-playbook...
+[WARNING]: Deprecation warnings can be disabled by setting `deprecation_warnings=False` in ansible.cfg.
+[DEPRECATION WARNING]: The '--inventory-file' argument is deprecated. This feature will be removed from ansible-core version 2.23. Use -i or --inventory instead.
+
+PLAY [Старт домашней работы] ***************************************************
+
+TASK [Gathering Facts] *********************************************************
+[WARNING]: Host 'default' is using the discovered Python interpreter at '/usr/bin/python3.14', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/devel/reference_appendices/interpreter_discovery.html for more information.
+ok: [default]
+
+TASK [Обновление репозиториев] *************************************************
+changed: [default]
+
+TASK [Установка необходимых пакетов] *******************************************
+changed: [default]
+
+TASK [Создание конфигурационного файла] ****************************************
+changed: [default]
+
+TASK [Создание файла-лога] *****************************************************
+changed: [default]
+
+TASK [Создание скрипта мониторинга] ********************************************
+changed: [default]
+
+TASK [Создание системного демона] **********************************************
+changed: [default]
+
+TASK [Создание таймера] ********************************************************
+changed: [default]
+
+TASK [Активация rsyslog] *******************************************************
+ok: [default]
+
+TASK [Активация мониторинга] ***************************************************
+changed: [default]
+
+TASK [Создание директории для spawn-fcgi] **************************************
+changed: [default]
+
+TASK [Создание конфигурации для spawn-fcgi] ************************************
+changed: [default]
+
+TASK [Создание системного демона spawn-fcgi] ***********************************
+changed: [default]
+
+TASK [Запуск spawn-fcgi] *******************************************************
+changed: [default]
+
+TASK [Остановка текущего демона Nginx] *****************************************
+changed: [default]
+
+TASK [Создание временного сервиса Nginx] ***************************************
+changed: [default]
+
+TASK [Создание первой конфигурации Nginx] **************************************
+changed: [default]
+
+TASK [Создание второй конфигурации Nginx] **************************************
+changed: [default]
+
+TASK [Создание псевдосайта] ****************************************************
+changed: [default]
+
+TASK [Перезапуск systemd] ******************************************************
+ok: [default]
+
+TASK [Запуск первого Nginx] ****************************************************
+changed: [default]
+
+TASK [Запуск второго Nginx] ****************************************************
+changed: [default]
+
+TASK [Проверка мониторинга] ****************************************************
+ok: [default]
+
+TASK [Проверка spawn-fcgi] *****************************************************
+ok: [default]
+
+TASK [Проверка второго Nginx] **************************************************
+ok: [default]
+
+TASK [Результаты проверок] *****************************************************
+ok: [default] => {
+    "msg": [
+        "watchlog:      Active: active (waiting) since Thu 2026-11-05 22:46:11 UTC; 9s ago",
+        "spawn-fcgi:      Active: active (running) since Thu 2026-11-05 22:46:14 UTC; 7s ago",
+        "nginx@second:      Active: active (running) since Thu 2026-11-05 22:46:20 UTC; 1s ago"
+    ]
+}
+
+TASK [Проверка прослушиваемых портов] ******************************************
+ok: [default]
+
+TASK [Список прослушиваемых портов] ********************************************
+ok: [default] => {
+    "ports.stdout_lines": [
+        "Netid State  Recv-Q Send-Q    Local Address:Port Peer Address:PortProcess                                                   ",
+        "udp   UNCONN 0      0            127.0.0.54:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=645,fd=18))                ",
+        "udp   UNCONN 0      0         127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=645,fd=16))                ",
+        "udp   UNCONN 0      0      10.0.2.15%enp0s3:68        0.0.0.0:*    users:((\"systemd-network\",pid=2309,fd=36))               ",
+        "udp   UNCONN 0      0             127.0.0.1:323       0.0.0.0:*    users:((\"chronyd\",pid=1341,fd=4))                        ",
+        "udp   UNCONN 0      0                 [::1]:323          [::]:*    users:((\"chronyd\",pid=1341,fd=5))                        ",
+        "tcp   LISTEN 0      511             0.0.0.0:9002      0.0.0.0:*    users:((\"nginx\",pid=11194,fd=5),(\"nginx\",pid=11193,fd=5))",
+        "tcp   LISTEN 0      511             0.0.0.0:9001      0.0.0.0:*    users:((\"nginx\",pid=11103,fd=5),(\"nginx\",pid=11102,fd=5))",
+        "tcp   LISTEN 0      4096            0.0.0.0:22        0.0.0.0:*    users:((\"sshd\",pid=1310,fd=3),(\"systemd\",pid=1,fd=212))  ",
+        "tcp   LISTEN 0      4096         127.0.0.54:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=645,fd=19))                ",
+        "tcp   LISTEN 0      4096      127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=645,fd=17))                ",
+        "tcp   LISTEN 0      4096               [::]:22           [::]:*    users:((\"sshd\",pid=1310,fd=4),(\"systemd\",pid=1,fd=213))  "
+    ]
+}
+
+PLAY RECAP *********************************************************************
+default                    : ok=28   changed=19   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
